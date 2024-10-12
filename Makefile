@@ -95,17 +95,14 @@ $(DIST_DIR)/lib/libbrotlicommon.a: build/lib/brotli/configured
 # Libunibreak
 build/lib/libunibreak/configure: lib/libunibreak $(wildcard $(BASE_DIR)build/patches/libunibreak/*.patch)
 	$(call PREPARE_SRC_PATCHED,libunibreak)
-	cd build/lib/libunibreak && ./autogen.sh  # Run autogen.sh before configure
+	cd build/lib/libunibreak && $(RECONF_AUTO)
 
-build/lib/libunibreak/configured: build/lib/libunibreak/configure
+$(DIST_DIR)/lib/libunibreak.a: build/lib/libunibreak/configure
 	cd build/lib/libunibreak && \
 	$(call CONFIGURE_AUTO) \
 		--enable-static \
-		--disable-shared
-	touch $@
-
-$(DIST_DIR)/lib/libunibreak.a: build/lib/libunibreak/configured
-	cd build/lib/libunibreak && \
+		--with-pic \
+	&& \ 
 	$(JSO_MAKE) install
 
 
