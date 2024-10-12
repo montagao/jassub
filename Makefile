@@ -4,6 +4,9 @@
 BASE_DIR:=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 DIST_DIR:=$(BASE_DIR)dist/libraries
 
+# Configuration option for libunibreak
+USE_LIBUNIBREAK ?= 1
+
 export CFLAGS = -O3 -flto -s USE_PTHREADS=0 -fno-rtti -fno-exceptions
 export CXXFLAGS = $(CFLAGS)
 export PKG_CONFIG_PATH = $(DIST_DIR)/lib/pkgconfig
@@ -89,6 +92,19 @@ $(DIST_DIR)/lib/libbrotlicommon.a: build/lib/brotli/configured
 	cd $(DIST_DIR)/lib/ && \
 	for lib in *-static.a ; do mv "$$lib" "$${lib%-static.a}.a" ; done
 
+# Libunibreak
+build/lib/libunibreak/configured: lib/libunibreak $(wildcard $(BASE_DIR)build/patches/libunibreak/*.patch)
+	$(call PREPARE_SRC_PATCHED,libunibreak)
+	touch build/lib/libunibreak/configured
+
+$(DIST_DIR)/lib/libunibreak.a: build/lib/libunibreak/configured
+	cd build/lib/libunibreak && \
+	$(call CONFIGURE_AUTO) \
+		--enable-static \
+		--disable-shared \
+	&& \
+	$(JSO_MAKE) install
+
 
 # Freetype without Harfbuzz
 build/lib/freetype/configure: lib/freetype $(wildcard $(BASE_DIR)build/patches/freetype/*.patch)
@@ -154,11 +170,12 @@ build/lib/libass/configured: lib/libass
 	$(call PREPARE_SRC_VPATH,libass)
 	touch build/lib/libass/configured
 
-$(DIST_DIR)/lib/libass.a: $(DIST_DIR)/lib/libfontconfig.a $(DIST_DIR)/lib/libharfbuzz.a $(DIST_DIR)/lib/libexpat.a $(DIST_DIR)/lib/libfribidi.a $(DIST_DIR)/lib/libfreetype.a $(DIST_DIR)/lib/libbrotlidec.a build/lib/libass/configured
+$(DIST_DIR)/lib/libass.a: $(DIST_DIR)/lib/libfontconfig.a $(DIST_DIR)/lib/libharfbuzz.a $(DIST_DIR)/lib/libexpat.a $(DIST_DIR)/lib/libfribidi.a $(DIST_DIR)/lib/libfreetype.a $(DIST_DIR)/lib/libbrotlidec.a $(if $(USE_LIBUNIBREAK),$(DIST_DIR)/lib/libunibreak.a,) build/lib/libass/configured
 	cd build/lib/libass && \
 	$(call CONFIGURE_AUTO,../../../lib/libass) \
 		--enable-large-tiles \
 		--enable-fontconfig \
+		$(if $(USE_LIBUNIBREAK),--enable-libunibreak,--disable-libunibreak) \
 	&& \
 	$(JSO_MAKE) install
 
@@ -170,6 +187,7 @@ LIBASS_DEPS = \
 	$(DIST_DIR)/lib/libexpat.a \
 	$(DIST_DIR)/lib/libharfbuzz.a \
 	$(DIST_DIR)/lib/libfontconfig.a \
+	$(if $(USE_LIBUNIBREAK),$(DIST_DIR)/lib/libunibreak.a,) \
 	$(DIST_DIR)/lib/libass.a
 
 
