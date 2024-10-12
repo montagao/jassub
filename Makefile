@@ -99,10 +99,14 @@ build/lib/libunibreak/configure: lib/libunibreak $(wildcard $(BASE_DIR)build/pat
 
 $(DIST_DIR)/lib/libunibreak.a: build/lib/libunibreak/configure
 	cd build/lib/libunibreak && \
-	$(call CONFIGURE_AUTO) \
+	emconfigure ./configure \
+		--prefix="$(DIST_DIR)" \
+		--host=x86-none-linux \
+		--build=x86_64 \
+		--disable-shared \
 		--enable-static \
 		--with-pic \
-	&& \ 
+	&& \
 	$(JSO_MAKE) install
 
 
