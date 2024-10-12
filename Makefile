@@ -99,9 +99,8 @@ build/lib/libunibreak/configured: lib/libunibreak $(wildcard $(BASE_DIR)build/pa
 
 $(DIST_DIR)/lib/libunibreak.a: build/lib/libunibreak/configured
 	cd build/lib/libunibreak && \
-	$(call CONFIGURE_AUTO) \
-		--enable-static \
-		--disable-shared \
+	$(call CONFIGURE_CMAKE) \
+		-DBUILD_SHARED_LIBS=OFF \
 	&& \
 	$(JSO_MAKE) install
 
