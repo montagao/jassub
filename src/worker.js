@@ -680,18 +680,18 @@ self.removeStyle = ({ index }) => {
 
 self.getEventDimensions = ({ eventIndex }) => {
   console.log("Worker: getEventDimensions called for event", eventIndex);
-  const dimensions = jassubObj.getEventDimensions(eventIndex);
-  console.log("Worker: C++ returned dimensions:", dimensions);
-  // Check what properties exist on the dimensions object
-  console.log("Worker: dimensions keys:", Object.keys(dimensions));
+  const cppDimensions = jassubObj.getEventDimensions(eventIndex);
+  console.log("Worker: C++ returned dimensions:", cppDimensions);
   
-  // Log the raw dimensions values
-  if (dimensions) {
-    console.log("Worker: width =", dimensions.width);
-    console.log("Worker: height =", dimensions.height);
-    console.log("Worker: x =", dimensions.x);
-    console.log("Worker: y =", dimensions.y);
-  }
+  // Create a plain JavaScript object with the values
+  const dimensions = {
+    width: cppDimensions.width,
+    height: cppDimensions.height,
+    x: cppDimensions.x,
+    y: cppDimensions.y
+  };
+  
+  console.log("Worker: Plain JS dimensions object:", dimensions);
   
   postMessage({
     target: 'getEventDimensions',
@@ -700,19 +700,37 @@ self.getEventDimensions = ({ eventIndex }) => {
 }
 
 self.getDimensionsAtTime = ({ time }) => {
-  const dimensions = jassubObj.getDimensionsAtTime(time)
+  const cppDimensions = jassubObj.getDimensionsAtTime(time);
+  
+  // Create a plain JavaScript object with the values
+  const dimensions = {
+    width: cppDimensions.width,
+    height: cppDimensions.height,
+    x: cppDimensions.x,
+    y: cppDimensions.y
+  };
+  
   postMessage({
     target: 'getDimensionsAtTime',
     dimensions
-  })
+  });
 }
 
 self.getAllEventDimensions = () => {
-  const allDimensions = jassubObj.getAllEventDimensions()
+  const cppAllDimensions = jassubObj.getAllEventDimensions();
+  
+  // Convert each C++ dimension object to a plain JS object
+  const allDimensions = cppAllDimensions.map(dims => ({
+    width: dims.width,
+    height: dims.height,
+    x: dims.x,
+    y: dims.y
+  }));
+  
   postMessage({
     target: 'getAllEventDimensions',
     allDimensions
-  })
+  });
 }
 
 self.sayHello = ({ name }) => {
