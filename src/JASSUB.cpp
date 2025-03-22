@@ -909,6 +909,8 @@ static RenderResult getNext(const RenderResult &res) {
 }
 
 EMSCRIPTEN_BINDINGS(JASSUB) {
+  emscripten::register_vector<EventDimensions>("VectorEventDimensions");
+
   emscripten::class_<RenderResult>("RenderResult")
     .property("x", &RenderResult::x)
     .property("y", &RenderResult::y)
