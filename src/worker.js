@@ -679,11 +679,24 @@ self.removeStyle = ({ index }) => {
 }
 
 self.getEventDimensions = ({ eventIndex }) => {
-  const dimensions = jassubObj.getEventDimensions(eventIndex)
+  console.log("Worker: getEventDimensions called for event", eventIndex);
+  const dimensions = jassubObj.getEventDimensions(eventIndex);
+  console.log("Worker: C++ returned dimensions:", dimensions);
+  // Check what properties exist on the dimensions object
+  console.log("Worker: dimensions keys:", Object.keys(dimensions));
+  
+  // Log the raw dimensions values
+  if (dimensions) {
+    console.log("Worker: width =", dimensions.width);
+    console.log("Worker: height =", dimensions.height);
+    console.log("Worker: x =", dimensions.x);
+    console.log("Worker: y =", dimensions.y);
+  }
+  
   postMessage({
     target: 'getEventDimensions',
     dimensions
-  })
+  });
 }
 
 self.getDimensionsAtTime = ({ time }) => {
