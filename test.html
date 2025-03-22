@@ -27,21 +27,21 @@
     renderer.addEventListener('ready', async () => {
       console.log('JASSUB is ready');
       
-      // Test event dimensions
-      renderer.getEventDimensions(0, (err, dimensions) => {
-        if (err) console.error(err);
-        else console.log('Dimensions for event 0:', dimensions);
-      });
+      // Play the video first and wait a bit
+      const video = document.getElementById('video');
+      video.play();
       
-      // Test Promise-based API
-      try {
-        const allDimensions = await renderer.getAllEventDimensionsAsync();
-        console.log('All dimensions:', allDimensions);
-      } catch (error) {
-        console.error('Error getting all dimensions:', error);
-      }
-      
-      document.getElementById('video').play();
+      // Wait 2 seconds before checking dimensions
+      setTimeout(() => {
+        renderer.getEventDimensions(1, (err, dimensions) => {
+          if (err) console.error(err);
+          else console.log('Dimensions for event 1:', dimensions);
+        });
+        
+        renderer.getAllEventDimensions((err, allDimensions) => {
+          console.log('All dimensions:', allDimensions);
+        });
+      }, 2000);
     });
 
     // Add error handler
