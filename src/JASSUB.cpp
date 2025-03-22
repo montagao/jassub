@@ -145,12 +145,17 @@ static void _remove_tag(char *begin, char *end) {
 }
 
 // Simple structure to return bounding box dimensions to JavaScript
-typedef struct EventDimensions {
+class EventDimensions {
+public:
   int width;
   int height;
   int x;
   int y;
-} EventDimensions;
+  
+  // Add a constructor to properly initialize values
+  EventDimensions(int w = 0, int h = 0, int xPos = 0, int yPos = 0) 
+    : width(w), height(h), x(xPos), y(yPos) {}
+};
 
 /**
  * \param begin point to the first character of the tag name (after backslash)
@@ -733,7 +738,7 @@ public:
 
   // Get dimensions of a specific event for JavaScript
   EventDimensions getEventDimensions(int eventIndex) {
-    EventDimensions dims = {0, 0, 0, 0};
+    EventDimensions dims(0, 0, 0, 0);
     
     if (!track || eventIndex < 0 || eventIndex >= track->n_events) {
       fprintf(stderr, "JASSUB: Invalid event index: %d (track has %d events)\n", 
@@ -793,7 +798,7 @@ public:
 
   // Get dimensions at a specific time point for JavaScript
   EventDimensions getDimensionsAtTime(double tm) {
-    EventDimensions dims = {0, 0, 0, 0};
+    EventDimensions dims(0, 0, 0, 0);
     
     if (!track) {
       return dims;
