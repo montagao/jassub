@@ -703,11 +703,21 @@ self.getAllEventDimensions = () => {
 }
 
 self.sayHello = ({ name }) => {
-  const greeting = jassubObj.sayHello(name || "World");
-  postMessage({
-    target: 'sayHello',
-    greeting
-  });
+  console.log("Worker: sayHello called with name:", name);
+  try {
+    const greeting = jassubObj.sayHello(name || "World");
+    console.log("Worker: Got greeting from C++:", greeting);
+    postMessage({
+      target: 'sayHello',
+      greeting
+    });
+  } catch (e) {
+    console.error("Worker: Error in sayHello:", e);
+    postMessage({
+      target: 'sayHello',
+      error: e.message
+    });
+  }
 }
 
 onmessage = ({ data }) => {
