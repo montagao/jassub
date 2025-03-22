@@ -19,13 +19,25 @@
 
     const renderer = new JASSUB({
       video: document.getElementById('video'),
-      subUrl: 'https://raw.githubusercontent.com/arcusmaximus/YTSubConverter/38fb2ab469f37e8f3a5a6a27adf91d9d0e81ea4f/sample2.ass',
+      subUrl: 'https://raw.githubusercontent.com/arcusmaximus/YTSubConverter/38fb2ab469f37e8f3a5a6a27adf91d9d0e81ea4f/sample2.assj',
       debug: true
     });
 
     // Listen for ready event
     renderer.addEventListener('ready', async () => {
       console.log('JASSUB is ready');
+          // Callback style
+      renderer.sayHello("JavaScript", (err, greeting) => {
+        console.log('sayHello');
+        if (err) console.error(err);
+        else console.log(greeting); // Outputs: "Hello, JavaScript from JASSUB!"
+      });
+        
+        // Promise style
+      renderer.sayHelloAsync("WebAssembly").then(greeting => {
+        console.log('sayHelloAsync');
+        console.log(greeting); // Outputs: "Hello, WebAssembly from JASSUB!"
+      });
       
       // Play the video first and wait a bit
       const video = document.getElementById('video');

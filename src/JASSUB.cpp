@@ -827,6 +827,14 @@ public:
     
     return result;
   }
+
+  std::string sayHello(const std::string& name) {
+    std::string greeting = "Hello, " + name + " from JASSUB!";
+    if (debug) {
+      fprintf(stdout, "JASSUB: Generated greeting: %s\n", greeting.c_str());
+    }
+    return greeting;
+  }
 };
 
 static char *copyString(const std::string &str) {
@@ -979,6 +987,7 @@ EMSCRIPTEN_BINDINGS(JASSUB) {
     .function("calculateBoundingBoxAtTime", &JASSUB::calculateBoundingBoxAtTime, emscripten::allow_raw_pointers())
     .function("getDimensionsAtTime", &JASSUB::getDimensionsAtTime, emscripten::allow_raw_pointers())
     .function("getAllEventDimensions", &JASSUB::getAllEventDimensions, emscripten::allow_raw_pointers())
+    .function("sayHello", &JASSUB::sayHello, emscripten::allow_raw_pointers())
     .property("trackColorSpace", &JASSUB::trackColorSpace)
     .property("changed", &JASSUB::changed)
     .property("count", &JASSUB::count)

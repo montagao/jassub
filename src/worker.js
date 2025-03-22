@@ -702,6 +702,14 @@ self.getAllEventDimensions = () => {
   })
 }
 
+self.sayHello = ({ name }) => {
+  const greeting = jassubObj.sayHello(name || "World");
+  postMessage({
+    target: 'sayHello',
+    greeting
+  });
+}
+
 onmessage = ({ data }) => {
   if (self[data.target]) {
     self[data.target](data)
