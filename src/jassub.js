@@ -918,4 +918,32 @@ export default class JASSUB extends EventTarget {
     this._worker?.terminate()
     return err
   }
+
+    /**
+   * Simple hello world example function.
+   * @param {String} name Name to greet
+   * @param {function(Error|null, String): void} callback Function to callback with the greeting
+   */
+    sayHello(name, callback) {
+      this._fetchFromWorker({
+        target: 'sayHello',
+        name
+      }, (err, { greeting }) => {
+        callback(err, greeting);
+      });
+    }
+  
+    /**
+     * Promise-based version of sayHello.
+     * @param {String} name Name to greet
+     * @return {Promise<String>} A promise that resolves to the greeting
+     */
+    sayHelloAsync(name) {
+      return new Promise((resolve, reject) => {
+        this.sayHello(name, (err, greeting) => {
+          if (err) reject(err);
+          else resolve(greeting);
+        });
+      });
+    }
 }
