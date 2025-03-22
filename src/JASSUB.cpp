@@ -714,14 +714,18 @@ public:
     long long now = event->Start;
     int changed = 0;
     ASS_Image* img = ass_render_frame(ass_renderer, track, now, &changed);
-
+    
+    // Count images for debugging
+    int imageCount = 0;
     for (ASS_Image* cur = img; cur; cur = cur->next) {
       if (!cur->w || !cur->h) continue;
-      int x0 = cur->dst_x;
-      int y0 = cur->dst_y;
-      int x1 = x0 + cur->w;
-      int y1 = y0 + cur->h;
-      result.add(x0, y0, cur->w, cur->h);
+      imageCount++;
+      result.add(cur->dst_x, cur->dst_y, cur->w, cur->h);
+    }
+    
+    if (debug && result.empty()) {
+      fprintf(stdout, "JASSUB: No images rendered for event %d (counted %d images)\n", 
+              eventIndex, imageCount);
     }
 
     return result;
@@ -732,16 +736,37 @@ public:
     EventDimensions dims = {0, 0, 0, 0};
     
     if (!track || eventIndex < 0 || eventIndex >= track->n_events) {
+      fprintf(stderr, "JASSUB: Invalid event index: %d (track has %d events)\n", 
+              eventIndex, track ? track->n_events : 0);
       return dims;
+    }
+    
+    ASS_Event* event = &track->events[eventIndex];
+    long long now = event->Start;
+    
+    if (debug) {
+      fprintf(stdout, "JASSUB: Calculating dimensions for event %d at time %lld ms\n", 
+              eventIndex, now);
+      fprintf(stdout, "JASSUB: Event text: %s\n", event->Text);
     }
     
     BoundingBox bbox = calculateEventBoundingBox(eventIndex);
     
-    if (!bbox.empty()) {
-      dims.width = bbox.max_x - bbox.min_x + 1;
-      dims.height = bbox.max_y - bbox.min_y + 1;
-      dims.x = bbox.min_x;
-      dims.y = bbox.min_y;
+    if (bbox.empty()) {
+      if (debug) {
+        fprintf(stdout, "JASSUB: No visible content for event %d\n", eventIndex);
+      }
+      return dims;
+    }
+    
+    dims.width = bbox.max_x - bbox.min_x + 1;
+    dims.height = bbox.max_y - bbox.min_y + 1;
+    dims.x = bbox.min_x;
+    dims.y = bbox.min_y;
+    
+    if (debug) {
+      fprintf(stdout, "JASSUB: Event %d dimensions: %dx%d at (%d,%d)\n", 
+              eventIndex, dims.width, dims.height, dims.x, dims.y);
     }
     
     return dims;
