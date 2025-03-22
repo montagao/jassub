@@ -556,6 +556,87 @@ export default class JASSUB extends EventTarget {
   }
 
   /**
+   * Get dimensions of a specific subtitle event.
+   * @param  {Number} eventIndex Index of the event to measure
+   * @param  {function(Error|null, Object): void} callback Function to callback when worker returns the dimensions.
+   */
+  getEventDimensions (eventIndex, callback) {
+    this._fetchFromWorker({
+      target: 'getEventDimensions',
+      eventIndex
+    }, (err, { dimensions }) => {
+      callback(err, dimensions)
+    })
+  }
+
+  /**
+   * Get dimensions of all subtitles visible at a specific time.
+   * @param  {Number} time Time in seconds
+   * @param  {function(Error|null, Object): void} callback Function to callback when worker returns the dimensions.
+   */
+  getDimensionsAtTime (time, callback) {
+    this._fetchFromWorker({
+      target: 'getDimensionsAtTime',
+      time
+    }, (err, { dimensions }) => {
+      callback(err, dimensions)
+    })
+  }
+
+  /**
+   * Promise-based version of getEventDimensions.
+   * @param  {Number} eventIndex Index of the event to measure
+   * @return {Promise<Object>} A promise that resolves to the dimensions object.
+   */
+  getEventDimensionsAsync (eventIndex) {
+    return new Promise((resolve, reject) => {
+      this.getEventDimensions(eventIndex, (err, dimensions) => {
+        if (err) reject(err)
+        else resolve(dimensions)
+      })
+    })
+  }
+
+  /**
+   * Promise-based version of getDimensionsAtTime.
+   * @param  {Number} time Time in seconds
+   * @return {Promise<Object>} A promise that resolves to the dimensions object.
+   */
+  getDimensionsAtTimeAsync (time) {
+    return new Promise((resolve, reject) => {
+      this.getDimensionsAtTime(time, (err, dimensions) => {
+        if (err) reject(err)
+        else resolve(dimensions)
+      })
+    })
+  }
+
+  /**
+   * Get dimensions for all events in the subtitle track.
+   * @param  {function(Error|null, Array<Object>): void} callback Function to callback when worker returns the dimensions.
+   */
+  getAllEventDimensions (callback) {
+    this._fetchFromWorker({
+      target: 'getAllEventDimensions'
+    }, (err, { allDimensions }) => {
+      callback(err, allDimensions)
+    })
+  }
+
+  /**
+   * Promise-based version of getAllEventDimensions.
+   * @return {Promise<Array<Object>>} A promise that resolves to an array of dimension objects for all events.
+   */
+  getAllEventDimensionsAsync () {
+    return new Promise((resolve, reject) => {
+      this.getAllEventDimensions((err, allDimensions) => {
+        if (err) reject(err)
+        else resolve(allDimensions)
+      })
+    })
+  }
+
+  /**
    * Adds a font to the renderer.
    * @param  {String|Uint8Array} font Font to add.
    */

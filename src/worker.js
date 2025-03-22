@@ -678,6 +678,30 @@ self.removeStyle = ({ index }) => {
   jassubObj.removeStyle(index)
 }
 
+self.getEventDimensions = ({ eventIndex }) => {
+  const dimensions = jassubObj.getEventDimensions(eventIndex)
+  postMessage({
+    target: 'getEventDimensions',
+    dimensions
+  })
+}
+
+self.getDimensionsAtTime = ({ time }) => {
+  const dimensions = jassubObj.getDimensionsAtTime(time)
+  postMessage({
+    target: 'getDimensionsAtTime',
+    dimensions
+  })
+}
+
+self.getAllEventDimensions = () => {
+  const allDimensions = jassubObj.getAllEventDimensions()
+  postMessage({
+    target: 'getAllEventDimensions',
+    allDimensions
+  })
+}
+
 onmessage = ({ data }) => {
   if (self[data.target]) {
     self[data.target](data)

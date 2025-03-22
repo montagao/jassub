@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string>
+#include <vector>
 
 #include <emscripten.h>
 #include <emscripten/bind.h>
@@ -142,6 +143,14 @@ static void _remove_tag(char *begin, char *end) {
     return;
   memset(begin, ' ', end - begin + 1);
 }
+
+// Simple structure to return bounding box dimensions to JavaScript
+typedef struct EventDimensions {
+  int width;
+  int height;
+  int x;
+  int y;
+} EventDimensions;
 
 /**
  * \param begin point to the first character of the tag name (after backslash)
@@ -692,6 +701,107 @@ public:
   ASS_Style *getStyle(int i) {
     return &track->styles[i];
   }
+
+  // Calculate bounding box dimensions for a specific event
+  BoundingBox calculateEventBoundingBox(int eventIndex) {
+    BoundingBox result;
+    
+    if (!track || eventIndex < 0 || eventIndex >= track->n_events) {
+      return result;
+    }
+
+    ASS_Event* event = &track->events[eventIndex];
+    long long now = event->Start;
+    int changed = 0;
+    ASS_Image* img = ass_render_frame(ass_renderer, track, now, &changed);
+
+    for (ASS_Image* cur = img; cur; cur = cur->next) {
+      if (!cur->w || !cur->h) continue;
+      int x0 = cur->dst_x;
+      int y0 = cur->dst_y;
+      int x1 = x0 + cur->w;
+      int y1 = y0 + cur->h;
+      result.add(x0, y0, cur->w, cur->h);
+    }
+
+    return result;
+  }
+
+  // Get dimensions of a specific event for JavaScript
+  EventDimensions getEventDimensions(int eventIndex) {
+    EventDimensions dims = {0, 0, 0, 0};
+    
+    if (!track || eventIndex < 0 || eventIndex >= track->n_events) {
+      return dims;
+    }
+    
+    BoundingBox bbox = calculateEventBoundingBox(eventIndex);
+    
+    if (!bbox.empty()) {
+      dims.width = bbox.max_x - bbox.min_x + 1;
+      dims.height = bbox.max_y - bbox.min_y + 1;
+      dims.x = bbox.min_x;
+      dims.y = bbox.min_y;
+    }
+    
+    return dims;
+  }
+
+  // Calculate bounding box at a specific time point
+  BoundingBox calculateBoundingBoxAtTime(double tm) {
+    BoundingBox result;
+    
+    if (!track) {
+      return result;
+    }
+
+    int changed = 0;
+    ASS_Image* img = ass_render_frame(ass_renderer, track, (int)(tm * 1000), &changed);
+
+    for (ASS_Image* cur = img; cur; cur = cur->next) {
+      if (!cur->w || !cur->h) continue;
+      result.add(cur->dst_x, cur->dst_y, cur->w, cur->h);
+    }
+
+    return result;
+  }
+
+  // Get dimensions at a specific time point for JavaScript
+  EventDimensions getDimensionsAtTime(double tm) {
+    EventDimensions dims = {0, 0, 0, 0};
+    
+    if (!track) {
+      return dims;
+    }
+    
+    BoundingBox bbox = calculateBoundingBoxAtTime(tm);
+    
+    if (!bbox.empty()) {
+      dims.width = bbox.max_x - bbox.min_x + 1;
+      dims.height = bbox.max_y - bbox.min_y + 1;
+      dims.x = bbox.min_x;
+      dims.y = bbox.min_y;
+    }
+    
+    return dims;
+  }
+
+  // Get dimensions for all events in the subtitle track
+  std::vector<EventDimensions> getAllEventDimensions() {
+    std::vector<EventDimensions> result;
+    
+    if (!track) {
+      return result;
+    }
+    
+    result.reserve(track->n_events);
+    
+    for (int i = 0; i < track->n_events; i++) {
+      result.push_back(getEventDimensions(i));
+    }
+    
+    return result;
+  }
 };
 
 static char *copyString(const std::string &str) {
@@ -769,6 +879,12 @@ EMSCRIPTEN_BINDINGS(JASSUB) {
     .property("next", &getNext)
     .property("image", &RenderResult::image);
 
+  emscripten::class_<EventDimensions>("EventDimensions")
+    .property("width", &EventDimensions::width)
+    .property("height", &EventDimensions::height)
+    .property("x", &EventDimensions::x)
+    .property("y", &EventDimensions::y);
+
   emscripten::class_<ASS_Style>("ASS_Style")
     .property("Name", &getStyleName, &setStyleName)    
     .property("FontName", &getFontName, &setFontName) 
@@ -833,6 +949,11 @@ EMSCRIPTEN_BINDINGS(JASSUB) {
     .function("renderImage", &JASSUB::renderImage, emscripten::allow_raw_pointers())
     .function("getEvent", &JASSUB::getEvent, emscripten::allow_raw_pointers())
     .function("getStyle", &JASSUB::getStyle, emscripten::allow_raw_pointers())
+    .function("calculateEventBoundingBox", &JASSUB::calculateEventBoundingBox, emscripten::allow_raw_pointers())
+    .function("getEventDimensions", &JASSUB::getEventDimensions, emscripten::allow_raw_pointers())
+    .function("calculateBoundingBoxAtTime", &JASSUB::calculateBoundingBoxAtTime, emscripten::allow_raw_pointers())
+    .function("getDimensionsAtTime", &JASSUB::getDimensionsAtTime, emscripten::allow_raw_pointers())
+    .function("getAllEventDimensions", &JASSUB::getAllEventDimensions, emscripten::allow_raw_pointers())
     .property("trackColorSpace", &JASSUB::trackColorSpace)
     .property("changed", &JASSUB::changed)
     .property("count", &JASSUB::count)
