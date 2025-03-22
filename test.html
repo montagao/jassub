@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>JASSUB Test</title>
+  <style>
+    video, canvas {
+      width: 640px;
+      height: 360px;
+    }
+  </style>
+</head>
+<body>
+  <video id="video" controls crossorigin="anonymous">
+    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+  </video>
+  
+  <script type="module">
+    import JASSUB from './jassub.es.js';
+
+    const renderer = new JASSUB({
+      video: document.getElementById('video'),
+      subUrl: 'https://usr2.translate.mom/lifetime/umP4MeFNVbVO8PhyVHKixDShd142/private/1742597686-subtitle.srt',
+      debug: true
+    });
+
+    // Listen for ready event
+    renderer.addEventListener('ready', async () => {
+      console.log('JASSUB is ready');
+      
+      // Test event dimensions
+      renderer.getEventDimensions(0, (err, dimensions) => {
+        if (err) console.error(err);
+        else console.log('Dimensions for event 0:', dimensions);
+      });
+      
+      // Test Promise-based API
+      try {
+        const allDimensions = await renderer.getAllEventDimensionsAsync();
+        console.log('All dimensions:', allDimensions);
+      } catch (error) {
+        console.error('Error getting all dimensions:', error);
+      }
+      
+      document.getElementById('video').play();
+    });
+
+    // Add error handler
+    renderer.addEventListener('error', (event) => {
+      console.error('JASSUB error:', event.error);
+    });
+  </script>
+</body>
+</html> 
