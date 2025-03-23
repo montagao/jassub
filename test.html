@@ -55,6 +55,9 @@
         const response = await fetch(SUB_URL);
         const originalContent = await response.text();
 
+        // Add a small delay after JASSUB is ready
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
         // Process the subtitles
         const processedContent = await roundedAss.processAss(originalContent);
 
