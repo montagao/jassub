@@ -2,18 +2,18 @@ typeof HTMLVideoElement < "u" && !("requestVideoFrameCallback" in HTMLVideoEleme
   const e = performance.now(), t = this.getVideoPlaybackQuality(), s = this.mozPresentedFrames || this.mozPaintedFrames || t.totalVideoFrames - t.droppedVideoFrames, i = (n, r) => {
     const a = this.getVideoPlaybackQuality(), h = this.mozPresentedFrames || this.mozPaintedFrames || a.totalVideoFrames - a.droppedVideoFrames;
     if (h > s) {
-      const d = this.mozFrameDelay || a.totalFrameDelay - t.totalFrameDelay || 0, l = r - n;
+      const l = this.mozFrameDelay || a.totalFrameDelay - t.totalFrameDelay || 0, d = r - n;
       c(r, {
-        presentationTime: r + d * 1e3,
-        expectedDisplayTime: r + l,
+        presentationTime: r + l * 1e3,
+        expectedDisplayTime: r + d,
         width: this.videoWidth,
         height: this.videoHeight,
-        mediaTime: Math.max(0, this.currentTime || 0) + l / 1e3,
+        mediaTime: Math.max(0, this.currentTime || 0) + d / 1e3,
         presentedFrames: h,
-        processingDuration: d
+        processingDuration: l
       }), delete this._rvfcpolyfillmap[e];
     } else
-      this._rvfcpolyfillmap[e] = requestAnimationFrame((d) => i(r, d));
+      this._rvfcpolyfillmap[e] = requestAnimationFrame((l) => i(r, l));
   };
   return this._rvfcpolyfillmap[e] = requestAnimationFrame((n) => i(e, n)), e;
 }, HTMLVideoElement.prototype.cancelVideoFrameCallback = function(c) {
@@ -73,8 +73,10 @@ class o extends EventTarget {
    * @param {Number} [options.libassGlyphLimit] libass glyph cache memory limit in MiB (approximate).
    */
   constructor(e) {
-    if (super(), !globalThis.Worker) throw this.destroy("Worker not supported");
-    if (!e) throw this.destroy("No options provided");
+    if (super(), !globalThis.Worker)
+      throw this.destroy("Worker not supported");
+    if (!e)
+      throw this.destroy("No options provided");
     this._loaded = /** @type {Promise<void>} */
     new Promise((s) => {
       this._init = s;
@@ -84,7 +86,8 @@ class o extends EventTarget {
       this._canvasParent = document.createElement("div"), this._canvasParent.className = "JASSUB", this._canvasParent.style.position = "relative", this._canvas = this._createCanvas(), this._video.insertAdjacentElement("afterend", this._canvasParent);
     else if (!this._canvas)
       throw this.destroy("Don't know where to render: you should give video or canvas in options.");
-    if (this._bufferCanvas = document.createElement("canvas"), this._bufferCtx = this._bufferCanvas.getContext("2d"), !this._bufferCtx) throw this.destroy("Canvas rendering not supported");
+    if (this._bufferCanvas = document.createElement("canvas"), this._bufferCtx = this._bufferCanvas.getContext("2d"), !this._bufferCtx)
+      throw this.destroy("Canvas rendering not supported");
     this._canvasctrl = this._offscreenRender ? this._canvas.transferControlToOffscreen() : this._canvas, this._ctx = !this._offscreenRender && this._canvasctrl.getContext("2d"), this._lastRenderTime = 0, this.debug = !!e.debug, this.prescaleFactor = e.prescaleFactor || 1, this.prescaleHeightLimit = e.prescaleHeightLimit || 1080, this.maxRenderHeight = e.maxRenderHeight || 0, this._boundResize = this.resize.bind(this), this._boundTimeUpdate = this._timeupdate.bind(this), this._boundSetRate = this.setRate.bind(this), this._boundUpdateColorSpace = this._updateColorSpace.bind(this), this._video && this.setVideo(e.video), this._onDemandRender && (this.busy = !1, this._lastDemandTime = null), this._worker = new Worker(e.workerUrl || "jassub-worker.js"), this._worker.onmessage = (s) => this._onmessage(s), this._worker.onerror = (s) => this._error(s), t.then(() => {
       this._worker.postMessage({
         target: "init",
@@ -131,20 +134,23 @@ class o extends EventTarget {
       }
   }
   static async _testImageBugs() {
-    if (o._hasBitmapBug !== null) return;
+    if (o._hasBitmapBug !== null)
+      return;
     const e = document.createElement("canvas"), t = e.getContext("2d", { willReadFrequently: !0 });
-    if (!t) throw new Error("Canvas rendering not supported");
+    if (!t)
+      throw new Error("Canvas rendering not supported");
     if (typeof ImageData.prototype.constructor == "function")
       try {
         new ImageData(new Uint8ClampedArray([0, 0, 0, 0]), 1, 1);
       } catch {
-        console.log("Detected that ImageData is not constructable despite browser saying so"), self.ImageData = function(h, d, l) {
-          const m = t.createImageData(d, l);
+        console.log("Detected that ImageData is not constructable despite browser saying so"), self.ImageData = function(h, l, d) {
+          const m = t.createImageData(l, d);
           return h && m.data.set(h), m;
         };
       }
     const s = document.createElement("canvas"), i = s.getContext("2d", { willReadFrequently: !0 });
-    if (!i) throw new Error("Canvas rendering not supported");
+    if (!i)
+      throw new Error("Canvas rendering not supported");
     e.width = s.width = 1, e.height = s.height = 1, t.clearRect(0, 0, 1, 1), i.clearRect(0, 0, 1, 1);
     const n = i.getImageData(0, 0, 1, 1).data;
     t.putImageData(new ImageData(new Uint8ClampedArray([0, 255, 0, 0]), 1, 1), 0, 0), i.drawImage(e, 0, 0);
@@ -154,8 +160,8 @@ class o extends EventTarget {
       i.drawImage(await createImageBitmap(new ImageData(a, 1)), 0, 0);
       const { data: h } = i.getImageData(0, 0, 1, 1);
       o._hasBitmapBug = !1;
-      for (const [d, l] of h.entries())
-        if (Math.abs(a[d] - l) > 15) {
+      for (const [l, d] of h.entries())
+        if (Math.abs(a[l] - d) > 15) {
           o._hasBitmapBug = !0, console.log("Detected a browser having issue with partial bitmaps, applying workaround");
           break;
         }
@@ -179,8 +185,8 @@ class o extends EventTarget {
       const r = this._getVideoPosition();
       let a = null;
       if (this._videoWidth) {
-        const h = this._video.videoWidth / this._videoWidth, d = this._video.videoHeight / this._videoHeight;
-        a = this._computeCanvasSize((r.width || 0) / h, (r.height || 0) / d);
+        const h = this._video.videoWidth / this._videoWidth, l = this._video.videoHeight / this._videoHeight;
+        a = this._computeCanvasSize((r.width || 0) / h, (r.height || 0) / l);
       } else
         a = this._computeCanvasSize(r.width || 0, r.height || 0);
       e = a.width, t = a.height, this._canvasParent && (s = r.y - (this._canvasParent.getBoundingClientRect().top - this._video.getBoundingClientRect().top), i = r.x), this._canvas.style.width = r.width + "px", this._canvas.style.height = r.height + "px";
@@ -376,6 +382,78 @@ class o extends EventTarget {
     });
   }
   /**
+   * Get dimensions of a specific subtitle event.
+   * @param  {Number} eventIndex Index of the event to measure
+   * @param  {function(Error|null, Object): void} callback Function to callback when worker returns the dimensions.
+   */
+  getEventDimensions(e, t) {
+    this._fetchFromWorker({
+      target: "getEventDimensions",
+      eventIndex: e
+    }, (s, { dimensions: i }) => {
+      t(s, i);
+    });
+  }
+  /**
+   * Get dimensions of all subtitles visible at a specific time.
+   * @param  {Number} time Time in seconds
+   * @param  {function(Error|null, Object): void} callback Function to callback when worker returns the dimensions.
+   */
+  getDimensionsAtTime(e, t) {
+    this._fetchFromWorker({
+      target: "getDimensionsAtTime",
+      time: e
+    }, (s, { dimensions: i }) => {
+      t(s, i);
+    });
+  }
+  /**
+   * Promise-based version of getEventDimensions.
+   * @param  {Number} eventIndex Index of the event to measure
+   * @return {Promise<Object>} A promise that resolves to the dimensions object.
+   */
+  getEventDimensionsAsync(e) {
+    return new Promise((t, s) => {
+      this.getEventDimensions(e, (i, n) => {
+        i ? s(i) : t(n);
+      });
+    });
+  }
+  /**
+   * Promise-based version of getDimensionsAtTime.
+   * @param  {Number} time Time in seconds
+   * @return {Promise<Object>} A promise that resolves to the dimensions object.
+   */
+  getDimensionsAtTimeAsync(e) {
+    return new Promise((t, s) => {
+      this.getDimensionsAtTime(e, (i, n) => {
+        i ? s(i) : t(n);
+      });
+    });
+  }
+  /**
+   * Get dimensions for all events in the subtitle track.
+   * @param  {function(Error|null, Array<Object>): void} callback Function to callback when worker returns the dimensions.
+   */
+  getAllEventDimensions(e) {
+    this._fetchFromWorker({
+      target: "getAllEventDimensions"
+    }, (t, { allDimensions: s }) => {
+      e(t, s);
+    });
+  }
+  /**
+   * Promise-based version of getAllEventDimensions.
+   * @return {Promise<Array<Object>>} A promise that resolves to an array of dimension objects for all events.
+   */
+  getAllEventDimensionsAsync() {
+    return new Promise((e, t) => {
+      this.getAllEventDimensions((s, i) => {
+        s ? t(s) : e(i);
+      });
+    });
+  }
+  /**
    * Adds a font to the renderer.
    * @param  {String|Uint8Array} font Font to add.
    */
@@ -409,7 +487,8 @@ class o extends EventTarget {
     this._lastDemandTime ? this._demandRender(this._lastDemandTime) : this.busy = !1;
   }
   _handleRVFC(e, { mediaTime: t, width: s, height: i }) {
-    if (this._destroyed) return null;
+    if (this._destroyed)
+      return null;
     this.busy ? this._lastDemandTime = { mediaTime: t, width: s, height: i } : (this.busy = !0, this._demandRender({ mediaTime: t, width: s, height: i })), this._video.requestVideoFrameCallback(this._handleRVFC.bind(this));
   }
   _demandRender({ mediaTime: e, width: t, height: s }) {
@@ -417,12 +496,14 @@ class o extends EventTarget {
   }
   // if we're using offscreen render, we can't use ctx filters, so we can't use a transfered canvas
   _detachOffscreen() {
-    if (!this._offscreenRender || this._ctx) return null;
+    if (!this._offscreenRender || this._ctx)
+      return null;
     this._canvas.remove(), this._createCanvas(), this._canvasctrl = this._canvas, this._ctx = this._canvasctrl.getContext("2d"), this.sendMessage("detachOffscreen"), this.busy = !1, this.resize(0, 0, 0, 0, !0);
   }
   // if the video or track changed, we need to re-attach the offscreen canvas
   _reAttachOffscreen() {
-    if (!this._offscreenRender || !this._ctx) return null;
+    if (!this._offscreenRender || !this._ctx)
+      return null;
     this._canvas.remove(), this._createCanvas(), this._canvasctrl = this._canvas.transferControlToOffscreen(), this._ctx = !1, this.sendMessage("offscreenCanvas", null, [this._canvasctrl]), this.resize(0, 0, 0, 0, !0);
   }
   _updateColorSpace() {
@@ -453,7 +534,8 @@ class o extends EventTarget {
       let a = 0;
       const h = s.bitmaps || e.length;
       delete s.bitmaps;
-      for (const d in s) a += s[d];
+      for (const l in s)
+        a += s[l];
       console.log("Bitmaps: " + h + " Total: " + (a | 0) + "ms", s);
     }
   }
@@ -515,6 +597,31 @@ class o extends EventTarget {
    */
   destroy(e) {
     return e && (e = this._error(e)), this._video && this._canvasParent && this._video.parentNode?.removeChild(this._canvasParent), this._destroyed = !0, this._removeListeners(), this.sendMessage("destroy"), this._worker?.terminate(), e;
+  }
+  /**
+  * Simple hello world example function.
+  * @param {String} name Name to greet
+  * @param {function(Error|null, String): void} callback Function to callback with the greeting
+  */
+  sayHello(e, t) {
+    this._fetchFromWorker({
+      target: "sayHello",
+      name: e
+    }, (s, { greeting: i }) => {
+      t(s, i);
+    });
+  }
+  /**
+   * Promise-based version of sayHello.
+   * @param {String} name Name to greet
+   * @return {Promise<String>} A promise that resolves to the greeting
+   */
+  sayHelloAsync(e) {
+    return new Promise((t, s) => {
+      this.sayHello(e, (i, n) => {
+        i ? s(i) : t(n);
+      });
+    });
   }
 }
 export {
