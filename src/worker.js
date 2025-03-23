@@ -717,20 +717,38 @@ self.getDimensionsAtTime = ({ time }) => {
 }
 
 self.getAllEventDimensions = () => {
-  const cppAllDimensions = jassubObj.getAllEventDimensions();
-  
-  // Convert each C++ dimension object to a plain JS object
-  const allDimensions = cppAllDimensions.map(dims => ({
-    width: dims.width,
-    height: dims.height,
-    x: dims.x,
-    y: dims.y
-  }));
-  
-  postMessage({
-    target: 'getAllEventDimensions',
-    allDimensions
-  });
+  try {
+    const allDimensions = [];
+    const eventCount = jassubObj.getEventCount();
+    
+    console.log("Worker: Getting dimensions for", eventCount, "events");
+    
+    for (let i = 0; i < eventCount; i++) {
+      const cppDimensions = jassubObj.getEventDimensions(i);
+      
+      // Create plain JS objects
+      allDimensions.push({
+        width: cppDimensions.width, 
+        height: cppDimensions.height,
+        x: cppDimensions.x,
+        y: cppDimensions.y
+      });
+    }
+    
+    console.log("Worker: Successfully got all event dimensions:", allDimensions.length);
+    
+    postMessage({
+      target: 'getAllEventDimensions',
+      allDimensions
+    });
+  } catch (error) {
+    console.error("Worker: Error in getAllEventDimensions:", error);
+    postMessage({
+      target: 'getAllEventDimensions',
+      error: error.message,
+      allDimensions: [] // Send empty array as fallback
+    });
+  }
 }
 
 self.sayHello = ({ name }) => {
