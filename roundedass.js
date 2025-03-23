@@ -89,6 +89,58 @@ class RoundedASS {
       return sections;
     }
     
+    /**
+ * Generate a rounded rectangle drawing command for ASS subtitles.
+ * 
+ * @param {number} halfWidth - Half width of the rectangle
+ * @param {number} halfHeight - Half height of the rectangle
+ * @param {number} borderRadius - Corner radius
+ * @returns {string} - ASS drawing commands for a rounded rectangle
+ */
+    generateRoundedRectDrawing(halfWidth, halfHeight, borderRadius) {
+      let drawing = '';
+
+  // Ensure border radius is not larger than the dimensions of the box
+  // by automatically adjusting it to fit smaller subtitles
+  const maxAllowedRadius = Math.max(1, Math.min(halfHeight, halfWidth) - 1);
+  const effectiveBorderRadius = borderRadius > 0 ? Math.min(borderRadius, maxAllowedRadius) : 0;
+
+  if (effectiveBorderRadius > 0) {
+      // Draw a rounded rectangle using bezier curves for corners (matching Python implementation)
+      // Start at top-left + radius, going clockwise
+      drawing += `m ${-halfWidth + effectiveBorderRadius} ${-halfHeight} `; // Starting point
+      drawing += `l ${halfWidth - effectiveBorderRadius} ${-halfHeight} `; // Top edge
+
+      // Top-right corner with bezier
+      drawing += `b ${halfWidth} ${-halfHeight} ${halfWidth} ${-halfHeight + effectiveBorderRadius} ${halfWidth} ${-halfHeight + effectiveBorderRadius} `;
+
+      drawing += `l ${halfWidth} ${halfHeight - effectiveBorderRadius} `; // Right edge
+
+      // Bottom-right corner
+      drawing += `b ${halfWidth} ${halfHeight} ${halfWidth - effectiveBorderRadius} ${halfHeight} ${halfWidth - effectiveBorderRadius} ${halfHeight} `;
+
+      // Bottom edge
+      drawing += `l ${-halfWidth + effectiveBorderRadius} ${halfHeight} `;
+
+      // Bottom-left corner
+      drawing += `b ${-halfWidth} ${halfHeight} ${-halfWidth} ${halfHeight - effectiveBorderRadius} ${-halfWidth} ${halfHeight - effectiveBorderRadius} `;
+
+      drawing += `l ${-halfWidth} ${-halfHeight + effectiveBorderRadius} `; // Left edge
+
+      // Top-left corner
+      drawing += `b ${-halfWidth} ${-halfHeight} ${-halfWidth + effectiveBorderRadius} ${-halfHeight} ${-halfWidth + effectiveBorderRadius} ${-halfHeight} `;
+  } else {
+      // Simple rectangle without rounded corners
+      drawing += `m ${-halfWidth} ${-halfHeight} `; // Top-left
+      drawing += `l ${halfWidth} ${-halfHeight} `; // Top-right
+      drawing += `l ${halfWidth} ${halfHeight} `; // Bottom-right
+      drawing += `l ${-halfWidth} ${halfHeight} `; // Bottom-left
+      drawing += `l ${-halfWidth} ${-halfHeight} `; // Back to top-left
+  }
+
+  return drawing;
+}
+
     
     /**
      * Get dimensions for all subtitle events
@@ -104,6 +156,11 @@ class RoundedASS {
             resolve(dimensions);
           }
         });
+          })
+          .catch(err => {
+            console.error('Failed to get dimensions:', err);
+            reject(err);
+          });
       });
     }
     
