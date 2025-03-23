@@ -89,20 +89,6 @@ class RoundedASS {
       return sections;
     }
     
-    /**
-     * Load ASS subtitle file into JASSUB
-     * 
-     * @param {string} assContent - The ASS file content
-     * @returns {Promise<void>}
-     */
-    async loadAss(assContent) {
-      if (!this.jassubInstance) {
-        throw new Error('JASSUB not initialized. Call initJassub() first.');
-      }
-      
-      await this.jassubInstance.loadTrack('text/x-ssa', assContent);
-      console.log('ASS file loaded into JASSUB');
-    }
     
     /**
      * Get dimensions for all subtitle events
@@ -177,9 +163,6 @@ class RoundedASS {
       
       // Parse ASS content
       const parsedAss = this.parseAss(assContent);
-      
-      // Load ASS into JASSUB
-      await this.loadAss(assContent);
       
       // Get dimensions for all events
       const dimensions = await this.getAllDimensions();
