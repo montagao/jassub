@@ -156,11 +156,6 @@ class RoundedASS {
             resolve(dimensions);
           }
         });
-          })
-          .catch(err => {
-            console.error('Failed to get dimensions:', err);
-            reject(err);
-          });
       });
     }
     
