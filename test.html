@@ -30,6 +30,7 @@
         // Initialize JASSUB first
         renderer = new JASSUB({
           video: video,
+          subUrl: SUB_URL,
           debug: true
         });
 
@@ -40,9 +41,6 @@
         });
 
         console.log('JASSUB is ready');
-
-        // Load original subtitles
-        await renderer.setTrackByUrl(SUB_URL);
 
         // Initialize RoundedASS with JASSUB instance
         roundedAss = new RoundedASS({
