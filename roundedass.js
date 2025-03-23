@@ -40,94 +40,12 @@ class RoundedASS {
      * @param {Object} jassubOptions - Additional JASSUB initialization options
      * @returns {Promise<void>}
      */
-    async initJassub(video = null, jassubOptions = {}) {
+    async setJassub(jassubInstance) {
       if (this.jassubInstance) {
         return;
       }
       
-      // Create a canvas if needed
-      const canvas = document.createElement('canvas');
-      if (!video) {
-        // Use default size if no video
-        canvas.width = 1920;
-        canvas.height = 1080;
-      }
-      
-      // Initialize JASSUB with default paths that can be overridden
-      const options = {
-        video: video,
-        canvas: canvas,
-        workerUrl: jassubOptions.workerUrl || 'jassub-worker.js',
-        legacyWorkerUrl: jassubOptions.legacyWorkerUrl || 'jassub-worker-legacy.js',
-        wasmUrl: jassubOptions.wasmUrl || 'jassub-worker.wasm',
-        usingWebGL: jassubOptions.usingWebGL !== undefined ? jassubOptions.usingWebGL : true,
-        ...jassubOptions
-      };
-      
-      this.jassubInstance = new JASSUB(options);
-      
-      // Wait for JASSUB to be ready
-      return new Promise((resolve, reject) => {
-        this.jassubInstance.on('ready', () => {
-          console.log('JASSUB is ready');
-          resolve();
-        });
-        
-        this.jassubInstance.on('error', (error) => {
-          console.error('JASSUB error:', error);
-          reject(error);
-        });
-        
-        // Set a timeout in case JASSUB doesn't initialize
-        setTimeout(() => {
-          reject(new Error('JASSUB initialization timed out'));
-        }, 10000);
-      });
-    }
-    
-    /**
-     * Generate rounded rectangle drawing commands for ASS
-     * 
-     * @param {number} halfWidth - Half of the box width
-     * @param {number} halfHeight - Half of the box height
-     * @param {number} radius - Corner radius
-     * @returns {string} - ASS drawing commands
-     */
-    generateRoundedRectDrawing(halfWidth, halfHeight, radius) {
-      // Ensure radius doesn't exceed dimensions
-      const maxRadius = Math.min(halfWidth, halfHeight);
-      const r = Math.min(radius, maxRadius);
-      
-      // If radius is 0 or negative, return a simple rectangle
-      if (r <= 0) {
-        return `m -${halfWidth} -${halfHeight} l ${halfWidth*2} 0 l 0 ${halfHeight*2} l -${halfWidth*2} 0 l 0 -${halfHeight*2}`;
-      }
-      
-      // Calculate control point distance for Bezier curves (magic number for approximating quarter circle)
-      const c = r * 0.55228;
-      
-      // Calculate coordinates
-      const right = halfWidth;
-      const left = -halfWidth;
-      const top = -halfHeight;
-      const bottom = halfHeight;
-      
-      // Adjusted corner positions
-      const rightMinusR = right - r;
-      const leftPlusR = left + r;
-      const topPlusR = top + r;
-      const bottomMinusR = bottom - r;
-      
-      // Drawing commands for rounded rectangle
-      return `m ${leftPlusR} ${top} ` +
-             `l ${rightMinusR} ${top} ` +
-             `b ${right-c} ${top} ${right} ${top+c} ${right} ${topPlusR} ` +
-             `l ${right} ${bottomMinusR} ` +
-             `b ${right} ${bottom-c} ${right-c} ${bottom} ${rightMinusR} ${bottom} ` +
-             `l ${leftPlusR} ${bottom} ` +
-             `b ${left+c} ${bottom} ${left} ${bottom-c} ${left} ${bottomMinusR} ` +
-             `l ${left} ${topPlusR} ` +
-             `b ${left} ${top+c} ${left+c} ${top} ${leftPlusR} ${top}`;
+      this.jassubInstance = jassubInstance;
     }
     
     /**

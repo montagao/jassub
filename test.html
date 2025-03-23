@@ -49,9 +49,7 @@
           paddingH: 25,
           paddingV: 15
         });
-        await roundedAss.initJassub(video, {
-          usingWebGL: true
-        });
+        await roundedAss.setJassub(renderer);
 
         // Fetch the subtitle content
         const response = await fetch(SUB_URL);
