@@ -97,15 +97,13 @@ class RoundedASS {
      */
     async getAllDimensions() {
       return new Promise((resolve, reject) => {
-        this.jassubInstance.getAllEventDimensions()
-          .then(dimensions => {
-            console.log(`Got dimensions for ${dimensions.length} events`);
-            resolve(dimensions);
-          })
-          .catch(err => {
-            console.error('Failed to get dimensions:', err);
+        this.jassubInstance.getAllEventDimensions((err, dimensions) => {
+          if (err) {
             reject(err);
-          });
+          } else {
+            resolve(dimensions);
+          }
+        });
       });
     }
     
